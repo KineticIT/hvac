@@ -42,13 +42,10 @@ class Client(object):
         }
 
         # auto detect backend version
-        try:
-            json_back = self.list_secret_backends()
-            if 'data' in json_back and 'kv/' in json_back['data']:
-                detected_version = json_back['data']['kv/']['options']['version']
-                self._version = int(detected_version)
-        except:
-            print('Cant determine backend version')
+        json_back = self.list_secret_backends()
+        if json_back and 'data' in json_back and 'kv/' in json_back['data']:
+            detected_version = json_back['data']['kv/']['options']['version']
+            self._version = int(detected_version)
 
     def read(self, path, wrap_ttl=None):
         """
@@ -87,7 +84,8 @@ class Client(object):
         if self._version == 1:
             response = self._post('/v1/{0}'.format(path), json=kwargs, wrap_ttl=wrap_ttl)
         elif self._version >= 2:
-            response = self._post('/v1/secret/data/{0}'.format(self.__cleanse_path(path)), data=kwargs, wrap_ttl=wrap_ttl)
+            response = self._post('/v1/secret/data/{0}'.format(self.__cleanse_path(path)), data=kwargs,
+                                  wrap_ttl=wrap_ttl)
 
         if response.status_code == 200:
             return response.json()
